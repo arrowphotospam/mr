@@ -248,3 +248,14 @@ namespace DotnetApp
         }
     }
 }
+
+public class LibraryM
+{
+    public List<Book> Books { get; set; }
+
+    public LibraryM()
+    {
+        Books = new List<Book>();
+    }
+}
+
