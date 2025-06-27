@@ -235,6 +235,15 @@ namespace DotnetApp
 }
 
 
+public class LibraryM
+{
+    public Dictionary<int, Book> Books { get; set; }
+
+    public LibraryM()
+    {
+        Books = new Dictionary<int, Book>();
+    }
+}
 
 
 
