@@ -1,0 +1,281 @@
+ADO
+
+using System;
+using System.Data;
+using System.Data.SqlClient;
+
+public class Car
+{
+    public int CarID { get; set; }
+    public string CarMake { get; set; }
+    public string CarModel { get; set; }
+    public int CarYear { get; set; }
+    public string ServiceDate { get; set; }
+    public int CarCost { get; set; }
+
+    public Car() { }
+
+    public Car(string make, string model, int year, string serviceDate, int cost)
+    {
+        CarMake = make;
+        CarModel = model;
+        CarYear = year;
+        ServiceDate = serviceDate;
+        CarCost = cost;
+    }
+
+    public Car(int id, string make, string model, int year, string serviceDate, int cost)
+    {
+        CarID = id;
+        CarMake = make;
+        CarModel = model;
+        CarYear = year;
+        ServiceDate = serviceDate;
+        CarCost = cost;
+    }
+}
+
+public static class CarManager
+{
+    private static string connectionString = "your_connection_string_here"; // Replace with your actual connection string
+
+    public static void AddCar(Car car)
+    {
+        using (SqlConnection con = new SqlConnection(connectionString))
+        {
+            SqlDataAdapter adapter = new SqlDataAdapter("SELECT * FROM Cars", con);
+            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Cars");
+            DataTable dt = ds.Tables["Cars"];
+            DataRow dr = dt.NewRow();
+            dr["CarMake"] = car.CarMake;
+            dr["CarModel"] = car.CarModel;
+            dr["CarYear"] = car.CarYear;
+            dr["ServiceDate"] = car.ServiceDate;
+            dr["CarCost"] = car.CarCost;
+            dt.Rows.Add(dr);
+            adapter.Update(dt);
+            Console.WriteLine("Added successfully.");
+        }
+    }
+
+    public static void ListCars()
+    {
+        using (SqlConnection con = new SqlConnection(connectionString))
+        {
+            SqlDataAdapter adapter = new SqlDataAdapter("SELECT * FROM Cars", con);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Cars");
+            DataTable dt = ds.Tables["Cars"];
+            if (dt.Rows.Count > 0)
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    PrintCar(dr);
+                }
+            }
+            else
+            {
+                Console.WriteLine("No cars available.");
+            }
+        }
+    }
+
+    public static void SearchCarByModel(string model)
+    {
+        using (SqlConnection con = new SqlConnection(connectionString))
+        {
+            SqlCommand com = new SqlCommand("SELECT * FROM Cars WHERE CarModel LIKE @model", con);
+            com.Parameters.AddWithValue("@model", $"%{model}%");
+            SqlDataAdapter adapter = new SqlDataAdapter(com);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Cars");
+            foreach (DataRow dr in ds.Tables["Cars"].Rows)
+            {
+                PrintCar(dr);
+            }
+        }
+    }
+
+    public static void SearchCarByCost(int threshold)
+    {
+        using (SqlConnection con = new SqlConnection(connectionString))
+        {
+            SqlCommand com = new SqlCommand("SELECT * FROM Cars WHERE CarCost > @threshold", con);
+            com.Parameters.AddWithValue("@threshold", threshold);
+            SqlDataAdapter adapter = new SqlDataAdapter(com);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Cars");
+            foreach (DataRow dr in ds.Tables["Cars"].Rows)
+            {
+                PrintCar(dr);
+            }
+        }
+    }
+
+    public static void SortCarByModelAscending()
+    {
+        using (SqlConnection con = new SqlConnection(connectionString))
+        {
+            SqlDataAdapter adapter = new SqlDataAdapter("SELECT * FROM Cars ORDER BY CarModel ASC", con);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Cars");
+            foreach (DataRow dr in ds.Tables["Cars"].Rows)
+            {
+                PrintCar(dr);
+            }
+        }
+    }
+
+    public static void DeleteCar(int carID)
+    {
+        using (SqlConnection con = new SqlConnection(connectionString))
+        {
+            SqlDataAdapter adapter = new SqlDataAdapter("SELECT * FROM Cars", con);
+            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Cars");
+            DataTable dt = ds.Tables["Cars"];
+            DataRow[] rows = dt.Select($"CarID = '{carID}'");
+            if (rows.Length > 0)
+            {
+                rows[0].Delete();
+                adapter.Update(dt);
+                Console.WriteLine("Car deleted successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Car not found.");
+            }
+        }
+    }
+
+    public static void UpdateCar(int carID, Car obj)
+    {
+        using (SqlConnection con = new SqlConnection(connectionString))
+        {
+            SqlDataAdapter adapter = new SqlDataAdapter("SELECT * FROM Cars", con);
+            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Cars");
+            DataTable dt = ds.Tables["Cars"];
+            DataRow[] rows = dt.Select($"CarID = '{carID}'");
+            if (rows.Length > 0)
+            {
+                DataRow dr = rows[0];
+                dr["CarMake"] = obj.CarMake;
+                dr["CarModel"] = obj.CarModel;
+                dr["CarYear"] = obj.CarYear;
+                dr["ServiceDate"] = obj.ServiceDate;
+                dr["CarCost"] = obj.CarCost;
+                adapter.Update(dt);
+                Console.WriteLine("Updated successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Car not found.");
+            }
+        }
+    }
+
+    private static void PrintCar(DataRow dr)
+    {
+        Console.WriteLine($"CarID: {dr["CarID"]}, CarMake: {dr["CarMake"]}, CarModel: {dr["CarModel"]}, CarYear: {dr["CarYear"]}, ServiceDate: {dr["ServiceDate"]}, CarCost: {dr["CarCost"]}");
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        bool exit = false;
+
+        while (!exit)
+        {
+            Console.WriteLine("\n--- Car Management Menu ---");
+            Console.WriteLine("1. Add Car");
+            Console.WriteLine("2. List All Cars");
+            Console.WriteLine("3. Search Car by Model");
+            Console.WriteLine("4. Search Car by Cost");
+            Console.WriteLine("5. Sort Cars by Model (Ascending)");
+            Console.WriteLine("6. Update Car");
+            Console.WriteLine("7. Delete Car");
+            Console.WriteLine("8. Exit");
+            Console.Write("Enter your choice (1-8): ");
+
+            string input = Console.ReadLine();
+            switch (input)
+            {
+                case "1":
+                    Console.Write("Enter Car Make: ");
+                    string make = Console.ReadLine();
+                    Console.Write("Enter Car Model: ");
+                    string model = Console.ReadLine();
+                    Console.Write("Enter Car Year: ");
+                    int year = int.Parse(Console.ReadLine());
+                    Console.Write("Enter Service Date (yyyy-mm-dd): ");
+                    string date = Console.ReadLine();
+                    Console.Write("Enter Car Cost: ");
+                    int cost = int.Parse(Console.ReadLine());
+
+                    Car newCar = new Car(make, model, year, date, cost);
+                    CarManager.AddCar(newCar);
+                    break;
+
+                case "2":
+                    CarManager.ListCars();
+                    break;
+
+                case "3":
+                    Console.Write("Enter model to search: ");
+                    string searchModel = Console.ReadLine();
+                    CarManager.SearchCarByModel(searchModel);
+                    break;
+
+                case "4":
+                    Console.Write("Enter cost threshold: ");
+                    int threshold = int.Parse(Console.ReadLine());
+                    CarManager.SearchCarByCost(threshold);
+                    break;
+
+                case "5":
+                    CarManager.SortCarByModelAscending();
+                    break;
+
+                case "6":
+                    Console.Write("Enter Car ID to update: ");
+                    int updateId = int.Parse(Console.ReadLine());
+                    Console.Write("Enter new Car Make: ");
+                    string newMake = Console.ReadLine();
+                    Console.Write("Enter new Car Model: ");
+                    string newModel = Console.ReadLine();
+                    Console.Write("Enter new Car Year: ");
+                    int newYear = int.Parse(Console.ReadLine());
+                    Console.Write("Enter new Service Date: ");
+                    string newDate = Console.ReadLine();
+                    Console.Write("Enter new Car Cost: ");
+                    int newCost = int.Parse(Console.ReadLine());
+
+                    Car updatedCar = new Car(updateId, newMake, newModel, newYear, newDate, newCost);
+                    CarManager.UpdateCar(updateId, updatedCar);
+                    break;
+
+                case "7":
+                    Console.Write("Enter Car ID to delete: ");
+                    int deleteId = int.Parse(Console.ReadLine());
+                    CarManager.DeleteCar(deleteId);
+                    break;
+
+                case "8":
+                    Console.WriteLine("Exiting application...");
+                    exit = true;
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid choice. Please enter a number between 1 and 8.");
+                    break;
+            }
+        }
+    }
+}
