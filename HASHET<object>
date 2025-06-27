@@ -1,0 +1,402 @@
+HASHSET<OBJECT>
+
+
+using System;
+using System.Collections.Generic;
+
+public class Student
+{
+    public int StudentId { get; set; }
+    public string StudentName { get; set; }
+    public string Type { get; set; }
+    public int Mark { get; set; }
+
+    public Student() { }
+
+    public Student(int id, string name, string type, int mark)
+    {
+        StudentId = id;
+        StudentName = name;
+        Type = type;
+        Mark = mark;
+    }
+}
+
+public class Program
+{
+    // Public HashSet to store students
+    public static HashSet<Student> students = new HashSet<Student>();
+
+    public static void Main(string[] args)
+    {
+        bool exit = true;
+
+        while (exit)
+        {
+            Console.WriteLine("\nMenu");
+            Console.WriteLine("1. Add Student");
+            Console.WriteLine("2. Update Student");
+            Console.WriteLine("3. Search Student");
+            Console.WriteLine("4. Delete By Name");
+            Console.WriteLine("5. Display");
+            Console.WriteLine("6. Exit");
+            Console.Write("Enter your choice (1-6): ");
+
+            int choice = int.Parse(Console.ReadLine());
+
+            switch (choice)
+            {
+                case 1:
+                    Console.Write("Enter the StudentID: ");
+                    int id = int.Parse(Console.ReadLine());
+
+                    Console.Write("Enter the Student Name: ");
+                    string name = Console.ReadLine();
+
+                    Console.Write("Enter the Type: ");
+                    string type = Console.ReadLine();
+
+                    Console.Write("Enter the Mark: ");
+                    int mark = int.Parse(Console.ReadLine());
+
+                    Student stud = new Student(id, name, type, mark);
+                    AddStudent(stud);
+                    break;
+
+                case 2:
+                    Console.Write("Enter the StudentID to update: ");
+                    int uid = int.Parse(Console.ReadLine());
+
+                    Console.Write("Enter the Student Name to update: ");
+                    string uname = Console.ReadLine();
+
+                    Console.Write("Enter the Type to update: ");
+                    string utype = Console.ReadLine();
+
+                    Console.Write("Enter the Mark to update: ");
+                    int umark = int.Parse(Console.ReadLine());
+
+                    UpdateStudent(uid, uname, utype, umark);
+                    break;
+
+                case 3:
+                    Console.Write("Enter the StudentID to search: ");
+                    int sid = int.Parse(Console.ReadLine());
+                    SearchStudent(sid);
+                    break;
+
+                case 4:
+                    Console.Write("Enter the Student Name to delete: ");
+                    string delname = Console.ReadLine();
+                    DeleteByName(delname);
+                    break;
+
+                case 5:
+                    Console.WriteLine("List of Student details:");
+                    Display();
+                    break;
+
+                case 6:
+                    Console.WriteLine("Exiting application...");
+                    exit = false;
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid choice, please try again.");
+                    break;
+            }
+        }
+    }
+
+    public static void AddStudent(Student student)
+    {
+        foreach (Student s in students)
+        {
+            if (s.StudentId == student.StudentId)
+            {
+                Console.WriteLine($"The Student ID {student.StudentId} already exists.");
+                return;
+            }
+        }
+
+        students.Add(student);
+        Console.WriteLine("Student added successfully.");
+    }
+
+    public static void UpdateStudent(int studentId, string newName, string newType, int newMark)
+    {
+        foreach (Student s in students)
+        {
+            if (s.StudentId == studentId)
+            {
+                s.StudentName = newName;
+                s.Type = newType;
+                s.Mark = newMark;
+                Console.WriteLine("Student updated successfully.");
+                return;
+            }
+        }
+
+        Console.WriteLine("The student with the given ID was not found.");
+    }
+
+    public static void SearchStudent(int studentId)
+    {
+        foreach (Student s in students)
+        {
+            if (s.StudentId == studentId)
+            {
+                Console.WriteLine("Student found:");
+                Console.WriteLine($"StudentID: {s.StudentId}");
+                Console.WriteLine($"StudentName: {s.StudentName}");
+                Console.WriteLine($"Type: {s.Type}");
+                Console.WriteLine($"Mark: {s.Mark}");
+                return;
+            }
+        }
+
+        Console.WriteLine("No record exists.");
+    }
+
+    public static void DeleteByName(string name)
+    {
+        Student toDelete = null;
+        foreach (Student s in students)
+        {
+            if (s.StudentName == name)
+            {
+                toDelete = s;
+                break;
+            }
+        }
+
+        if (toDelete != null)
+        {
+            students.Remove(toDelete);
+            Console.WriteLine("Deleted successfully.");
+        }
+        else
+        {
+            Console.WriteLine("The name was not found.");
+        }
+    }
+
+    public static void Display()
+    {
+        if (students.Count == 0)
+        {
+            Console.WriteLine("No records found.");
+            return;
+        }
+
+        foreach (Student s in students)
+        {
+            Console.WriteLine($"StudentID: {s.StudentId}, StudentName: {s.StudentName}, Type: {s.Type}, Mark: {s.Mark}");
+        }
+    }
+}
+
+
+
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+
+public class Student
+{
+    public int StudentId { get; set; }
+    public string StudentName { get; set; }
+    public string Type { get; set; }
+    public int Mark { get; set; }
+
+    public Student() { }
+
+    public Student(int id, string name, string type, int mark)
+    {
+        StudentId = id;
+        StudentName = name;
+        Type = type;
+        Mark = mark;
+    }
+}
+
+public class StudentManager
+{
+    public HashSet<Student> students = new HashSet<Student>();
+
+    public void AddStudent(Student student)
+    {
+        foreach (Student s in students)
+        {
+            if (s.StudentId == student.StudentId)
+            {
+                Console.WriteLine($"The Student ID {student.StudentId} already exists.");
+                return;
+            }
+        }
+
+        students.Add(student);
+        Console.WriteLine("Student added successfully.");
+    }
+
+    public void UpdateStudent(int studentId, string newName, string newType, int newMark)
+    {
+        foreach (Student s in students)
+        {
+            if (s.StudentId == studentId)
+            {
+                s.StudentName = newName;
+                s.Type = newType;
+                s.Mark = newMark;
+                Console.WriteLine("Student updated successfully.");
+                return;
+            }
+        }
+
+        Console.WriteLine("The student with the given ID was not found.");
+    }
+
+    public void SearchStudent(int studentId)
+    {
+        foreach (Student s in students)
+        {
+            if (s.StudentId == studentId)
+            {
+                Console.WriteLine("Student found:");
+                Console.WriteLine($"StudentID: {s.StudentId}");
+                Console.WriteLine($"StudentName: {s.StudentName}");
+                Console.WriteLine($"Type: {s.Type}");
+                Console.WriteLine($"Mark: {s.Mark}");
+                return;
+            }
+        }
+
+        Console.WriteLine("No record exists.");
+    }
+
+    public void DeleteByName(string name)
+    {
+        Student toDelete = null;
+        foreach (Student s in students)
+        {
+            if (s.StudentName == name)
+            {
+                toDelete = s;
+                break;
+            }
+        }
+
+        if (toDelete != null)
+        {
+            students.Remove(toDelete);
+            Console.WriteLine("Deleted successfully.");
+        }
+        else
+        {
+            Console.WriteLine("The name was not found.");
+        }
+    }
+
+    public void Display()
+    {
+        if (students.Count == 0)
+        {
+            Console.WriteLine("No records found.");
+            return;
+        }
+
+        foreach (Student s in students)
+        {
+            Console.WriteLine($"StudentID: {s.StudentId}, StudentName: {s.StudentName}, Type: {s.Type}, Mark: {s.Mark}");
+        }
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        StudentManager manager = new StudentManager();
+        bool exit = true;
+
+        while (exit)
+        {
+            Console.WriteLine("\nMenu");
+            Console.WriteLine("1. Add Student");
+            Console.WriteLine("2. Update Student");
+            Console.WriteLine("3. Search Student");
+            Console.WriteLine("4. Delete By Name");
+            Console.WriteLine("5. Display");
+            Console.WriteLine("6. Exit");
+            Console.Write("Enter your choice (1-6): ");
+
+            int choice = int.Parse(Console.ReadLine());
+
+            switch (choice)
+            {
+                case 1:
+                    Console.Write("Enter the StudentID: ");
+                    int id = int.Parse(Console.ReadLine());
+
+                    Console.Write("Enter the Student Name: ");
+                    string name = Console.ReadLine();
+
+                    Console.Write("Enter the Type: ");
+                    string type = Console.ReadLine();
+
+                    Console.Write("Enter the Mark: ");
+                    int mark = int.Parse(Console.ReadLine());
+
+                    Student stud = new Student(id, name, type, mark);
+                    manager.AddStudent(stud);
+                    break;
+
+                case 2:
+                    Console.Write("Enter the StudentID to update: ");
+                    int uid = int.Parse(Console.ReadLine());
+
+                    Console.Write("Enter the Student Name to update: ");
+                    string uname = Console.ReadLine();
+
+                    Console.Write("Enter the Type to update: ");
+                    string utype = Console.ReadLine();
+
+                    Console.Write("Enter the Mark to update: ");
+                    int umark = int.Parse(Console.ReadLine());
+
+                    manager.UpdateStudent(uid, uname, utype, umark);
+                    break;
+
+                case 3:
+                    Console.Write("Enter the StudentID to search: ");
+                    int sid = int.Parse(Console.ReadLine());
+                    manager.SearchStudent(sid);
+                    break;
+
+                case 4:
+                    Console.Write("Enter the Student Name to delete: ");
+                    string delname = Console.ReadLine();
+                    manager.DeleteByName(delname);
+                    break;
+
+                case 5:
+                    Console.WriteLine("List of Student details:");
+                    manager.Display();
+                    break;
+
+                case 6:
+                    Console.WriteLine("Exiting application...");
+                    exit = false;
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid choice, please try again.");
+                    break;
+            }
+        }
+    }
+}
