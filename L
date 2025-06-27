@@ -1,0 +1,250 @@
+namespace DotnetApp.Models
+{
+    public class Employee
+    {
+        public int EmployeeId {get;set;}
+        public string Name {get;set;}
+        public string Department {get;set;}
+        public DateTime JoinDate {get;set;}
+        public double Salary {get;set;}
+        public bool IsEligible {get;set;}
+
+        public void Display()
+        {
+            Console.WriteLine($"ID:{EmployeeId}, Name:{Name}, Dept:{Department}, Date:{JoinDate.ToShortDateString()}, Salary:{Salary}, Eligible:{IsEligible}");
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using DotnetApp.Models;
+
+namespace DotnetApp
+{
+    public class EmployeeManager
+    {
+        private List<Employee> employees = new List<Employee>();
+
+        public void Add(Employee e)
+        {
+            if(employees.Any(x=>x.EmployeeId==e.EmployeeId))
+            {
+                Console.WriteLine($"Employee with ID {e.EmployeeId} already exists.");
+                return;
+            }
+            employees.Add(e);
+            Console.WriteLine("Employee added.");
+        }
+
+        public void AddWithEligibilityCheck(Employee e)
+        {
+            if(employees.Any(x=>x.EmployeeId==e.EmployeeId))
+            {
+                Console.WriteLine($"Employee with ID {e.EmployeeId} already exists.");
+                return;
+            }
+
+            if(e.Salary>=50000 && e.Department.ToLower()=="engineering")
+            {
+                e.IsEligible=true;
+                employees.Add(e);
+                Console.WriteLine("Eligible");
+                Console.WriteLine("Employee added with eligibility check.");
+            }
+            else
+            {
+                e.IsEligible=false;
+                Console.WriteLine("Not Eligible. Employee not added.");
+            }
+        }
+
+        public void Update(int id)
+        {
+            var e=employees.FirstOrDefault(x=>x.EmployeeId==id);
+            if(e==null){Console.WriteLine("Not found");return;}
+
+            e.Name=Console.ReadLine();
+            e.Department=Console.ReadLine();
+            e.JoinDate=DateTime.Parse(Console.ReadLine());
+            e.Salary=double.Parse(Console.ReadLine());
+            e.IsEligible=bool.Parse(Console.ReadLine());
+
+            Console.WriteLine("Updated");
+        }
+
+        public void UpdateByObject(Employee updated)
+        {
+            var e=employees.FirstOrDefault(x=>x.EmployeeId==updated.EmployeeId);
+            if(e==null){Console.WriteLine("Not found");return;}
+
+            e.Name=updated.Name;
+            e.Department=updated.Department;
+            e.JoinDate=updated.JoinDate;
+            e.Salary=updated.Salary;
+            e.IsEligible=updated.IsEligible;
+
+            Console.WriteLine("Updated using object.");
+        }
+
+        public void ReadById(int id)
+        {
+            var e=employees.FirstOrDefault(x=>x.EmployeeId==id);
+            if(e==null) Console.WriteLine("Not found");
+            else e.Display();
+        }
+
+        public void ReadByName(string name)
+        {
+            var list=employees.Where(x=>x.Name.Equals(name,StringComparison.OrdinalIgnoreCase)).ToList();
+            if(list.Count==0) Console.WriteLine("No matches");
+            else foreach(var e in list) e.Display();
+        }
+
+        public void ReadByDepartment(string dept)
+        {
+            var list=employees.Where(x=>x.Department.Equals(dept,StringComparison.OrdinalIgnoreCase)).ToList();
+            if(list.Count==0) Console.WriteLine("No matches");
+            else foreach(var e in list) e.Display();
+        }
+
+        public void TopN(int n)
+        {
+            foreach(var e in employees.OrderByDescending(x=>x.Salary).Take(n)) e.Display();
+        }
+
+        public void BottomN(int n)
+        {
+            foreach(var e in employees.OrderBy(x=>x.Salary).Take(n)) e.Display();
+        }
+
+        public void DateRange(DateTime start, DateTime end)
+        {
+            foreach(var e in employees.Where(x=>x.JoinDate>=start && x.JoinDate<=end)) e.Display();
+        }
+
+        public void ShowEligible()
+        {
+            foreach(var e in employees.Where(x=>x.IsEligible)) e.Display();
+        }
+
+        public void List()
+        {
+            if(employees.Count==0) Console.WriteLine("No employees.");
+            else foreach(var e in employees) e.Display();
+        }
+    }
+
+    public class Program
+    {
+        public static void Main()
+        {
+            EmployeeManager manager=new EmployeeManager();
+
+            while(true)
+            {
+                Console.WriteLine("\n1-Add 2-AddWithEligibility 3-Update 4-UpdateObj 5-ReadID 6-ReadName 7-ReadDept 8-TopN 9-BottomN 10-DateRange 11-Eligible 12-List 13-Exit");
+                string ch=Console.ReadLine();
+
+                try
+                {
+                    if(string.IsNullOrWhiteSpace(ch)) throw new ArgumentException("Choice cannot be empty");
+
+                    if(ch=="1")
+                    {
+                        Employee e=ReadEmployeeFromConsole();
+                        manager.Add(e);
+                    }
+                    else if(ch=="2")
+                    {
+                        Employee e=ReadEmployeeFromConsole();
+                        manager.AddWithEligibilityCheck(e);
+                    }
+                    else if(ch=="3")
+                    {
+                        Console.Write("Enter ID: ");
+                        if(!int.TryParse(Console.ReadLine(),out int id)) throw new FormatException("Invalid ID");
+                        manager.Update(id);
+                    }
+                    else if(ch=="4")
+                    {
+                        Employee e=ReadEmployeeFromConsole();
+                        manager.UpdateByObject(e);
+                    }
+                    else if(ch=="5")
+                    {
+                        if(!int.TryParse(Console.ReadLine(),out int id)) throw new FormatException("Invalid ID");
+                        manager.ReadById(id);
+                    }
+                    else if(ch=="6") manager.ReadByName(Console.ReadLine());
+                    else if(ch=="7") manager.ReadByDepartment(Console.ReadLine());
+                    else if(ch=="8")
+                    {
+                        if(!int.TryParse(Console.ReadLine(),out int n)) throw new FormatException("Invalid number");
+                        manager.TopN(n);
+                    }
+                    else if(ch=="9")
+                    {
+                        if(!int.TryParse(Console.ReadLine(),out int n)) throw new FormatException("Invalid number");
+                        manager.BottomN(n);
+                    }
+                    else if(ch=="10")
+                    {
+                        Console.Write("Enter start date (yyyy-MM-dd): ");
+                        if(!DateTime.TryParse(Console.ReadLine(),out DateTime d1)) throw new FormatException("Invalid date");
+                        Console.Write("Enter end date (yyyy-MM-dd): ");
+                        if(!DateTime.TryParse(Console.ReadLine(),out DateTime d2)) throw new FormatException("Invalid date");
+                        manager.DateRange(d1,d2);
+                    }
+                    else if(ch=="11") manager.ShowEligible();
+                    else if(ch=="12") manager.List();
+                    else if(ch=="13"){Console.WriteLine("Exiting");break;}
+                    else Console.WriteLine("Invalid choice.");
+                }
+                catch(FormatException ex){Console.WriteLine("Error: "+ex.Message);}
+                catch(ArgumentException ex){Console.WriteLine("Error: "+ex.Message);}
+            }
+        }
+
+        static Employee ReadEmployeeFromConsole()
+        {
+            Employee e=new Employee();
+
+            Console.Write("Enter ID: ");
+            if(!int.TryParse(Console.ReadLine(),out int id)) throw new FormatException("Invalid ID");
+            e.EmployeeId=id;
+
+            Console.Write("Enter Name: ");
+            e.Name=Console.ReadLine();
+            if(string.IsNullOrWhiteSpace(e.Name)) throw new ArgumentException("Name required");
+
+            Console.Write("Enter Department: ");
+            e.Department=Console.ReadLine();
+            if(string.IsNullOrWhiteSpace(e.Department)) throw new ArgumentException("Department required");
+
+            Console.Write("Enter Join Date (yyyy-MM-dd): ");
+            if(!DateTime.TryParse(Console.ReadLine(),out DateTime dt)) throw new FormatException("Invalid date");
+            e.JoinDate=dt;
+
+            Console.Write("Enter Salary: ");
+            if(!double.TryParse(Console.ReadLine(),out double sal)) throw new FormatException("Invalid salary");
+            e.Salary=sal;
+
+            Console.Write("Is Eligible (true/false): ");
+            if(!bool.TryParse(Console.ReadLine(),out bool eligible)) throw new FormatException("Invalid boolean");
+            e.IsEligible=eligible;
+
+            return e;
+        }
+    }
+}
