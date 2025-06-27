@@ -1,0 +1,37 @@
+public static void AddCarWithIdentity(Car v)
+{
+    using (SqlConnection connection = new SqlConnection(connectionString))
+    {
+        SqlDataAdapter adapter = new SqlDataAdapter("SELECT * FROM Cars", connection);
+        SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+        DataSet dataSet = new DataSet();
+        adapter.Fill(dataSet, "Cars");
+
+        DataTable carTable = dataSet.Tables["Cars"];
+        DataRow newRow = carTable.NewRow();
+        newRow["CarMake"] = v.CarMake;
+        newRow["CarModel"] = v.CarModel;
+        newRow["Year"] = v.Year;
+        newRow["ServiceDate"] = v.ServiceDate;
+        carTable.Rows.Add(newRow);
+
+        adapter.Update(carTable);
+
+        // Retrieve the last inserted identity value
+        SqlCommand identityCommand = new SqlCommand("SELECT IDENT_CURRENT('Cars')", connection);
+        connection.Open();
+        object result = identityCommand.ExecuteScalar();
+        connection.Close();
+
+        if (result != null)
+        {
+            int carId = Convert.ToInt32(result);
+            Console.WriteLine("Car added successfully.");
+            Console.WriteLine($"CarID: {carId}\tCarMake: {v.CarMake}\tCarModel: {v.CarModel}\tYear: {v.Year}\tService Date: {v.ServiceDate}");
+        }
+        else
+        {
+            Console.WriteLine("Car ID not found.");
+        }
+    }
+}
