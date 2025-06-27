@@ -1,0 +1,8 @@
+catch(FormatException)
+            {
+                Console.WriteLine("Invalid input format. Please enter numeric values where required.");
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}");
+            }
