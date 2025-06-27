@@ -1,0 +1,202 @@
+using System;
+using System.Data;
+using Microsoft.Data.SqlClient;
+
+namespace CarManagementApp
+{
+    public class Program
+    {
+        public static string connectionString = "User Id=sa;password=examlyMssql@123;server=localhost;Database=appdb;trusted_connection=false;Persist Security Info=False;Encrypt=False;";
+
+        public static void Main(string[] args)
+        {
+            while (true)
+            {
+                Console.WriteLine("\nMenu:");
+                Console.WriteLine("1. Add Car");
+                Console.WriteLine("2. Show Top N Cars");
+                Console.WriteLine("3. Show Bottom N Cars");
+                Console.WriteLine("4. Search by Year Threshold");
+                Console.WriteLine("5. Search by Date Range");
+                Console.WriteLine("6. Search by Pattern");
+                Console.WriteLine("7. Exit");
+                Console.Write("Enter your choice: ");
+                string ch = Console.ReadLine();
+
+                switch (ch)
+                {
+                    case "1":
+                        Console.Write("Make: ");
+                        string make = Console.ReadLine();
+                        Console.Write("Model: ");
+                        string model = Console.ReadLine();
+                        Console.Write("Year: ");
+                        int year = int.Parse(Console.ReadLine());
+                        Console.Write("Service Date (yyyy-MM-dd): ");
+                        string serviceDate = Console.ReadLine();
+                        AddCar(make, model, year, serviceDate);
+                        break;
+
+                    case "2":
+                        Console.Write("Top N: ");
+                        int top = int.Parse(Console.ReadLine());
+                        ShowTopNRecords(top);
+                        break;
+
+                    case "3":
+                        Console.Write("Bottom N: ");
+                        int bottom = int.Parse(Console.ReadLine());
+                        ShowBottomNRecords(bottom);
+                        break;
+
+                    case "4":
+                        Console.Write("Year Threshold: ");
+                        string threshold = Console.ReadLine();
+                        SearchCarWithThreshold(threshold);
+                        break;
+
+                    case "5":
+                        Console.Write("Start Date (yyyy-MM-dd): ");
+                        DateTime start = DateTime.Parse(Console.ReadLine());
+                        Console.Write("End Date (yyyy-MM-dd): ");
+                        DateTime end = DateTime.Parse(Console.ReadLine());
+                        SearchCarWithServiceDateRange(start, end);
+                        break;
+
+                    case "6":
+                        Console.Write("Enter pattern: ");
+                        string pattern = Console.ReadLine();
+                        SearchCarWithPatternMatching(pattern);
+                        break;
+
+                    case "7":
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid choice.");
+                        break;
+                }
+            }
+        }
+
+        public static void AddCar(string make, string model, int year, string serviceDate)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = "INSERT INTO Cars (Make, Model, Year, ServiceDate) VALUES (@Make, @Model, @Year, @ServiceDate)";
+                SqlCommand cmd = new SqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@Make", make);
+                cmd.Parameters.AddWithValue("@Model", model);
+                cmd.Parameters.AddWithValue("@Year", year);
+                cmd.Parameters.AddWithValue("@ServiceDate", serviceDate);
+
+                con.Open();
+                cmd.ExecuteNonQuery();
+                Console.WriteLine("Car added.");
+            }
+        }
+
+        public static void ShowTopNRecords(int n)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = $"SELECT TOP {n} * FROM Cars ORDER BY DateAdded DESC";
+                SqlDataAdapter adp = new SqlDataAdapter(query, con);
+                DataSet ds = new DataSet();
+                adp.Fill(ds, "Cars");
+
+                foreach (DataRow row in ds.Tables["Cars"].Rows)
+                {
+                    Console.WriteLine($"{row["CarID"]}, {row["Make"]}, {row["Model"]}, {row["DateAdded"]}");
+                }
+            }
+        }
+
+        public static void ShowBottomNRecords(int n)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = $"SELECT TOP {n} * FROM Cars ORDER BY DateAdded ASC";
+                SqlDataAdapter adp = new SqlDataAdapter(query, con);
+                DataSet ds = new DataSet();
+                adp.Fill(ds, "Cars");
+
+                foreach (DataRow row in ds.Tables["Cars"].Rows)
+                {
+                    Console.WriteLine($"{row["CarID"]}, {row["Make"]}, {row["Model"]}, {row["DateAdded"]}");
+                }
+            }
+        }
+
+        public static void SearchCarWithThreshold(string thresholdValue)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = $"SELECT * FROM Cars WHERE Year > {thresholdValue}";
+                SqlDataAdapter adp = new SqlDataAdapter(query, con);
+                DataSet ds = new DataSet();
+                adp.Fill(ds, "Cars");
+
+                if (ds.Tables["Cars"].Rows.Count == 0)
+                {
+                    Console.WriteLine("Car not found.");
+                    return;
+                }
+
+                foreach (DataRow row in ds.Tables["Cars"].Rows)
+                {
+                    Console.WriteLine($"{row["CarID"]}, {row["Make"]}, {row["Model"]}, {row["Year"]}, {row["ServiceDate"]}");
+                }
+            }
+        }
+
+        public static void SearchCarWithServiceDateRange(DateTime startDate, DateTime endDate)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = "SELECT * FROM Cars WHERE ServiceDate BETWEEN @StartDate AND @EndDate";
+                SqlDataAdapter adp = new SqlDataAdapter(query, con);
+                adp.SelectCommand.Parameters.AddWithValue("@StartDate", startDate);
+                adp.SelectCommand.Parameters.AddWithValue("@EndDate", endDate);
+
+                DataSet ds = new DataSet();
+                adp.Fill(ds, "Cars");
+
+                if (ds.Tables["Cars"].Rows.Count == 0)
+                {
+                    Console.WriteLine("Car not found.");
+                    return;
+                }
+
+                foreach (DataRow row in ds.Tables["Cars"].Rows)
+                {
+                    Console.WriteLine($"{row["CarID"]}, {row["Make"]}, {row["Model"]}, {row["Year"]}, {row["ServiceDate"]}");
+                }
+            }
+        }
+
+        public static void SearchCarWithPatternMatching(string pattern)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = "SELECT * FROM Cars WHERE Make LIKE @Pattern";
+                SqlDataAdapter adp = new SqlDataAdapter(query, con);
+                adp.SelectCommand.Parameters.AddWithValue("@Pattern", "%" + pattern + "%");
+
+                DataSet ds = new DataSet();
+                adp.Fill(ds, "Cars");
+
+                if (ds.Tables["Cars"].Rows.Count == 0)
+                {
+                    Console.WriteLine("Car not found.");
+                    return;
+                }
+
+                foreach (DataRow row in ds.Tables["Cars"].Rows)
+                {
+                    Console.WriteLine($"{row["CarID"]}, {row["Make"]}, {row["Model"]}, {row["DateAdded"]}");
+                }
+            }
+        }
+    }
+}
